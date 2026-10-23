@@ -1,18 +1,12 @@
 FROM python:3.11-slim
 
-# Hugging Face Spaces requires the container to run as UID 1000 (non-root)
-RUN useradd -m -u 1000 user
+WORKDIR /app
 
-# Switch to the non-root user for all subsequent commands
-USER user
-ENV HOME=/home/user
-ENV PATH=/home/user/.local/bin:$PATH
-
-WORKDIR $HOME/app
-
-# Install Torrus from PyPI
+# Install Torrus
 RUN pip install --no-cache-dir torrus
 
-# Start Torrus, binding to 0.0.0.0 and the port defined by Hugging Face (default 7860)
-# --no-browser prevents it from trying to open a GUI browser inside the container
-CMD ["sh", "-c", "torrus serve --host 0.0.0.0 --port ${PORT:-7860} --no-browser"]
+# Start Torrus. 
+# --host 0.0.0.0 is required so Render can route traffic to it.
+# --port ${PORT:-10000} uses Render's assigned port, falling back to 10000.
+# --no-browser prevents it from trying to open a GUI.
+CMD ["sh", "-c", "torrus serve --host 0.0.0.0 --port ${PORT:-10000} --no-browser"]
